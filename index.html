@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Waypoint: cheap long-haul flights and good layovers</title>
+<meta name="description" content="Plan long-haul trips: flexible-date fare searches across Skyscanner, Google Flights, Kayak and Momondo, plus a guide to which connecting airports make a good layover.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#E4ECF0; --surface:#F6F9FA; --ink:#12304A; --ink-soft:#4B6479;
+  --line:#BACCD7; --route:#B01E77; --route-soft:#F3D9E8; --amber:#B36F08; --good:#1F7A55;
+  --dot:#8FA8B8;
+  --display:"Barlow Semi Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Barlow","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1C28; --surface:#15283A; --ink:#DCE8EF; --ink-soft:#97AEC0;
+    --line:#2B4459; --route:#E45CAF; --route-soft:#3A1F33; --amber:#E0A23A; --good:#4CC08C; --dot:#4E6A80;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1C28; --surface:#15283A; --ink:#DCE8EF; --ink-soft:#97AEC0;
+  --line:#2B4459; --route:#E45CAF; --route-soft:#3A1F33; --amber:#E0A23A; --good:#4CC08C; --dot:#4E6A80;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;overflow-x:clip;background:var(--paper);color:var(--ink);font:400 17px/1.55 var(--body);-webkit-font-smoothing:antialiased}
+a{color:var(--route)}
+:focus-visible{outline:3px solid var(--route);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* header */
+.top{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:22px 0 8px}
+.brand{font:700 22px/1 var(--display);letter-spacing:.02em;display:flex;align-items:center;gap:10px}
+.brand svg{width:26px;height:26px}
+.top a{font:500 15px var(--body);color:var(--ink-soft)}
+h1{font:700 clamp(40px,7vw,78px)/.95 var(--display);letter-spacing:-.01em;margin:26px 0 12px;max-width:14ch}
+.lede{max-width:60ch;color:var(--ink-soft);margin:0 0 28px;font-size:18px}
+
+/* planner layout */
+.planner{display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:28px;align-items:start}
+@media (max-width:900px){.planner{grid-template-columns:1fr}}
+form{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px}
+fieldset{border:0;padding:0;margin:0 0 18px}
+legend,.lbl{font:600 15px/1.2 var(--display);letter-spacing:.02em;margin-bottom:6px;display:block;color:var(--ink)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media (max-width:420px){.row3{grid-template-columns:1fr 1fr}}
+label{display:block}
+input,select{width:100%;font:500 16px var(--body);color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px 11px;min-height:44px}
+input.code{font:700 24px/1 var(--display);letter-spacing:.06em;text-transform:uppercase}
+.hint{font-size:13px;color:var(--ink-soft);margin-top:4px;min-height:1.2em}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg label{flex:1 1 auto;position:relative}
+.seg input{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;min-height:0;inset:0}
+.seg span{display:block;text-align:center;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font:500 15px var(--body);cursor:pointer;background:var(--paper)}
+.seg input:checked+span{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.seg input:focus-visible+span{outline:3px solid var(--route);outline-offset:2px}
+.styles{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.styles span{text-align:left;line-height:1.25}
+.styles small{display:block;font-size:12.5px;opacity:.8;font-weight:400}
+.swap{background:none;border:0;color:var(--ink-soft);font:500 14px var(--body);cursor:pointer;padding:4px 0;margin:-6px 0 12px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:600 18px var(--display);letter-spacing:.03em;border-radius:10px;padding:13px 20px;border:0;cursor:pointer;min-height:48px;text-decoration:none}
+.btn-main{width:100%;background:var(--route);color:#fff}
+.btn-main:hover{filter:brightness(1.08)}
+.err{color:var(--route);font-weight:600;margin:10px 0 0;min-height:1em}
+.hidden{display:none!important}
+
+/* chart */
+.chart{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+.map{width:100%;height:auto;display:block;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.map .grat{stroke:var(--line);stroke-width:.6;fill:none}
+.map .apt{fill:var(--dot)}
+.map .gc{stroke:var(--ink-soft);stroke-width:1.4;stroke-dasharray:4 4;fill:none}
+.map .via{stroke:var(--route);stroke-width:2.4;fill:none;stroke-linecap:round}
+.map .draw{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:draw 1.1s ease-out forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion:reduce){.map .draw{animation:none;stroke-dashoffset:0}}
+.map .end{fill:var(--ink)}
+.map .hubdot{fill:var(--surface);stroke:var(--route);stroke-width:2}
+.map text{font:600 13px var(--display);fill:var(--ink)}
+.map text.hl{fill:var(--route)}
+.map .halo{stroke:var(--surface);stroke-width:4;paint-order:stroke}
+.summary{display:flex;flex-wrap:wrap;gap:8px 28px;margin:14px 2px 0;color:var(--ink-soft);font-size:15px}
+.summary b{display:block;font:700 26px/1.1 var(--display);color:var(--ink)}
+
+/* results */
+#results{margin:44px 0 60px}
+#results h2{font:700 clamp(28px,4vw,40px)/1.05 var(--display);margin:0 0 6px}
+.sub{color:var(--ink-soft);max-width:68ch;margin:0 0 18px}
+.block{margin:0 0 48px}
+.sites{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.site{display:block;text-decoration:none;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--route);border-radius:6px 12px 12px 6px;padding:14px 16px}
+.site:hover{border-color:var(--route)}
+.site strong{font:700 21px var(--display);display:block}
+.site span{font-size:14px;color:var(--ink-soft)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:15px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font:600 14px var(--display);letter-spacing:.03em;color:var(--ink-soft)}
+tr:last-child td{border-bottom:0}
+.tag{display:inline-block;font-size:12.5px;font-weight:600;color:var(--good);border:1px solid currentColor;border-radius:999px;padding:1px 8px;margin-left:6px}
+td a{margin-right:12px;font-weight:500}
+
+/* hub ranking: styled like a departures board */
+.hubs{list-style:none;margin:0;padding:0;border-top:2px solid var(--ink)}
+.hubs>li{border-bottom:1px solid var(--line)}
+.hubs summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:2.2em 4.2em 1fr auto;align-items:center;gap:14px;padding:14px 6px}
+.hubs summary::-webkit-details-marker{display:none}
+.hubs summary:hover{background:var(--surface)}
+.rank{font:600 18px var(--display);color:var(--ink-soft)}
+.hcode{font:700 34px/1 var(--display);letter-spacing:.04em}
+.hname{font-weight:600;line-height:1.25}
+.hname small{display:block;font-weight:400;color:var(--ink-soft);font-size:14px}
+.fit{text-align:right;font:600 14px var(--display);color:var(--ink-soft);white-space:nowrap}
+.fit b{display:block;font:700 28px/1 var(--display);color:var(--route)}
+@media (max-width:560px){.hubs summary{grid-template-columns:3.4em 1fr auto}.rank{display:none}}
+.hubbody{display:grid;grid-template-columns:minmax(220px,300px) 1fr;gap:24px;padding:4px 6px 24px}
+@media (max-width:760px){.hubbody{grid-template-columns:1fr}}
+.verdict{font:600 19px/1.3 var(--display);margin:0 0 12px}
+.bars{display:grid;gap:9px;margin:0}
+.bars div{display:grid;grid-template-columns:8.5em 1fr 2em;align-items:center;gap:8px;font-size:14px}
+.bars i{height:8px;border-radius:4px;background:var(--line);position:relative;overflow:hidden}
+.bars i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--v);background:var(--ink)}
+.facts{margin:0;display:grid;gap:10px}
+.facts dt{font:600 14px var(--display);letter-spacing:.03em;color:var(--ink-soft)}
+.facts dd{margin:0 0 4px}
+.visa{border-left:3px solid var(--amber);padding-left:10px}
+.hublinks{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.hublinks a{font:600 15px var(--display);letter-spacing:.02em;text-decoration:none;border:1px solid var(--route);border-radius:8px;padding:8px 12px;color:var(--route)}
+.hublinks a:hover{background:var(--route-soft)}
+.warn{font-size:13.5px;color:var(--ink-soft);margin:10px 0 0}
+.share{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+.empty{padding:18px;border:1px dashed var(--line);border-radius:12px;color:var(--ink-soft)}
+footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--ink-soft);font-size:14px}
+footer p{max-width:75ch}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 5 L19 16 L16 27 L13 16 Z" fill="#B01E77"/></svg>
+      Waypoint
+    </div>
+    <a id="requestLink" href="#" target="_blank" rel="noopener">Ask for help planning</a>
+  </header>
+
+  <h1>Find the fare. Choose the layover.</h1>
+  <p class="lede">Tell us where you're going and how flexible you are. We'll open the cheapest-fare searches on the big comparison sites and show which connecting airports are worth stopping in on the way.</p>
+
+  <div class="planner">
+    <form id="f" novalidate>
+      <div class="row">
+        <label><span class="lbl">From</span><input class="code" id="from" name="from" list="apts" maxlength="3" placeholder="LHR" autocomplete="off" required><div class="hint" id="fromHint"></div></label>
+        <label><span class="lbl">To</span><input class="code" id="to" name="to" list="apts" maxlength="3" placeholder="SYD" autocomplete="off" required><div class="hint" id="toHint"></div></label>
+      </div>
+      <button type="button" class="swap" id="swap">Swap from and to</button>
+      <datalist id="apts"></datalist>
+
+      <fieldset>
+        <legend>Trip</legend>
+        <div class="seg">
+          <label><input type="radio" name="trip" value="return" checked><span>Return</span></label>
+          <label><input type="radio" name="trip" value="oneway"><span>One way</span></label>
+        </div>
+      </fieldset>
+
+      <div class="row">
+        <label><span class="lbl">Leave</span><input type="date" id="dep" name="dep" required></label>
+        <label id="retWrap"><span class="lbl">Come back</span><input type="date" id="ret" name="ret"></label>
+      </div>
+
+      <fieldset style="margin-top:16px">
+        <label><span class="lbl">How flexible are your dates?</span>
+          <select id="flex" name="flex">
+            <option value="0">Exact dates</option>
+            <option value="1">1 day either side</option>
+            <option value="2">2 days either side</option>
+            <option value="3" selected>3 days either side</option>
+            <option value="month">Any time that month</option>
+          </select>
+        </label>
+      </fieldset>
+
+      <div class="row3">
+        <label><span class="lbl">Adults</span><input type="number" id="adults" name="adults" min="1" max="9" value="1"></label>
+        <label><span class="lbl">Cabin</span>
+          <select id="cabin" name="cabin">
+            <option value="economy">Economy</option>
+            <option value="premiumeconomy">Premium economy</option>
+            <option value="business">Business</option>
+            <option value="first">First</option>
+          </select>
+        </label>
+        <label><span class="lbl">Stops</span>
+          <select id="stops" name="stops">
+            <option value="any">Any</option>
+            <option value="1">Up to 1</option>
+            <option value="0">Direct only</option>
+          </select>
+        </label>
+      </div>
+
+      <fieldset style="margin-top:18px">
+        <legend>What kind of layover do you want?</legend>
+        <div class="seg styles">
+          <label><input type="radio" name="layover" value="quick" checked><span>Quick change<small>Under 3 hours</small></span></label>
+          <label><input type="radio" name="layover" value="relaxed"><span>Relaxed<small>3 to 8 hours, stay airside</small></span></label>
+          <label><input type="radio" name="layover" value="explore"><span>See the city<small>8 to 24 hours</small></span></label>
+          <label><input type="radio" name="layover" value="stopover"><span>Stopover<small>A night or more</small></span></label>
+        </div>
+      </fieldset>
+      <label id="nightsWrap" class="hidden" style="margin:-6px 0 18px"><span class="lbl">Nights in the stopover city</span><input type="number" id="nights" name="nights" min="1" max="10" value="2"></label>
+
+      <button class="btn btn-main" type="submit">Find flights and layovers</button>
+      <p class="err" id="err" role="alert"></p>
+    </form>
+
+    <section class="chart" aria-label="Route map">
+      <svg class="map" id="map" viewBox="0 0 1000 372" role="img" aria-label="World map of airports and your route"></svg>
+      <div class="summary" id="summary"><span>Enter two airports to see the route and the best places to change planes.</span></div>
+    </section>
+  </div>
+
+  <section id="results" class="hidden" aria-live="polite"></section>
+
+  <footer>
+    <p>Waypoint doesn't sell tickets. Prices, availability and booking all happen on the sites we link to. Layover notes are a starting guide: always check visa and transit rules for your passport with your airline or the destination government before you book, as they change often.</p>
+  </footer>
+</div>
+
+<script>
+/* ---------- Settings: change these after you fork the repo ---------- */
+const CONFIG = {
+  // "your-github-username/your-repo" enables the "Ask for help planning" link (opens a GitHub issue form)
+  repo: "",
+  skyscannerDomain: "www.skyscanner.net",   // e.g. www.skyscanner.co.nz, www.skyscanner.com
+  kayakDomain: "www.kayak.com",
+  momondoDomain: "www.momondo.com"
+};
+
+/* ---------- Airports: [code, city, country, lat, lon] ---------- */
+const AIRPORTS = [
+["LHR","London Heathrow","UK",51.47,-0.45],["LGW","London Gatwick","UK",51.15,-0.19],["MAN","Manchester","UK",53.35,-2.28],["EDI","Edinburgh","UK",55.95,-3.37],
+["DUB","Dublin","Ireland",53.42,-6.27],["CDG","Paris","France",49.01,2.55],["AMS","Amsterdam","Netherlands",52.31,4.76],["FRA","Frankfurt","Germany",50.04,8.56],
+["MUC","Munich","Germany",48.35,11.79],["BER","Berlin","Germany",52.37,13.50],["ZRH","Zurich","Switzerland",47.46,8.55],["GVA","Geneva","Switzerland",46.24,6.11],
+["VIE","Vienna","Austria",48.11,16.57],["CPH","Copenhagen","Denmark",55.62,12.65],["ARN","Stockholm","Sweden",59.65,17.92],["OSL","Oslo","Norway",60.19,11.10],
+["HEL","Helsinki","Finland",60.32,24.96],["MAD","Madrid","Spain",40.49,-3.57],["BCN","Barcelona","Spain",41.30,2.08],["LIS","Lisbon","Portugal",38.77,-9.13],
+["FCO","Rome","Italy",41.80,12.25],["MXP","Milan","Italy",45.63,8.72],["ATH","Athens","Greece",37.94,23.94],["IST","Istanbul","Türkiye",41.26,28.74],
+["WAW","Warsaw","Poland",52.17,20.97],["PRG","Prague","Czechia",50.10,14.26],["BRU","Brussels","Belgium",50.90,4.48],["KEF","Reykjavik","Iceland",63.99,-22.62],
+["DXB","Dubai","UAE",25.25,55.36],["DOH","Doha","Qatar",25.27,51.61],["AUH","Abu Dhabi","UAE",24.43,54.65],["TLV","Tel Aviv","Israel",32.01,34.89],
+["CAI","Cairo","Egypt",30.12,31.41],["JNB","Johannesburg","South Africa",-26.14,28.24],["CPT","Cape Town","South Africa",-33.97,18.60],["NBO","Nairobi","Kenya",-1.32,36.93],
+["ADD","Addis Ababa","Ethiopia",8.98,38.80],["CMN","Casablanca","Morocco",33.37,-7.59],["LOS","Lagos","Nigeria",6.58,3.32],
+["DEL","Delhi","India",28.56,77.10],["BOM","Mumbai","India",19.09,72.87],["BLR","Bengaluru","India",13.20,77.71],["CMB","Colombo","Sri Lanka",7.18,79.88],
+["MLE","Malé","Maldives",4.19,73.53],["BKK","Bangkok","Thailand",13.69,100.75],["SIN","Singapore","Singapore",1.36,103.99],["KUL","Kuala Lumpur","Malaysia",2.75,101.71],
+["CGK","Jakarta","Indonesia",-6.13,106.66],["DPS","Bali","Indonesia",-8.75,115.17],["MNL","Manila","Philippines",14.51,121.02],["SGN","Ho Chi Minh City","Vietnam",10.82,106.66],
+["HAN","Hanoi","Vietnam",21.22,105.81],["HKG","Hong Kong","Hong Kong",22.31,113.92],["TPE","Taipei","Taiwan",25.08,121.23],["ICN","Seoul Incheon","South Korea",37.46,126.44],
+["NRT","Tokyo Narita","Japan",35.77,140.39],["HND","Tokyo Haneda","Japan",35.55,139.78],["KIX","Osaka","Japan",34.43,135.24],["PVG","Shanghai","China",31.14,121.81],
+["PEK","Beijing","China",40.08,116.58],["CAN","Guangzhou","China",23.39,113.30],
+["SYD","Sydney","Australia",-33.94,151.18],["MEL","Melbourne","Australia",-37.67,144.84],["BNE","Brisbane","Australia",-27.38,153.12],["PER","Perth","Australia",-31.94,115.97],
+["ADL","Adelaide","Australia",-34.95,138.53],["AKL","Auckland","New Zealand",-37.01,174.79],["WLG","Wellington","New Zealand",-41.33,174.81],["CHC","Christchurch","New Zealand",-43.49,172.53],
+["ZQN","Queenstown","New Zealand",-45.02,168.74],["NAN","Nadi","Fiji",-17.76,177.44],["PPT","Papeete","French Polynesia",-17.55,-149.61],
+["JFK","New York JFK","USA",40.64,-73.78],["EWR","Newark","USA",40.69,-74.17],["BOS","Boston","USA",42.36,-71.01],["IAD","Washington Dulles","USA",38.95,-77.46],
+["ATL","Atlanta","USA",33.64,-84.43],["MIA","Miami","USA",25.79,-80.29],["ORD","Chicago","USA",41.98,-87.90],["DFW","Dallas Fort Worth","USA",32.90,-97.04],
+["IAH","Houston","USA",29.99,-95.34],["DEN","Denver","USA",39.86,-104.67],["SEA","Seattle","USA",47.45,-122.31],["SFO","San Francisco","USA",37.62,-122.38],
+["LAX","Los Angeles","USA",33.94,-118.41],["LAS","Las Vegas","USA",36.08,-115.15],["HNL","Honolulu","USA",21.32,-157.92],["YVR","Vancouver","Canada",49.19,-123.18],
+["YYZ","Toronto","Canada",43.68,-79.62],["YUL","Montreal","Canada",45.47,-73.74],["MEX","Mexico City","Mexico",19.44,-99.07],["CUN","Cancún","Mexico",21.04,-86.87],
+["GRU","São Paulo","Brazil",-23.43,-46.47],["GIG","Rio de Janeiro","Brazil",-22.81,-43.25],["EZE","Buenos Aires","Argentina",-34.82,-58.54],["SCL","Santiago","Chile",-33.39,-70.79],
+["LIM","Lima","Peru",-12.02,-77.11],["BOG","Bogotá","Colombia",4.70,-74.15],["PTY","Panama City","Panama",9.07,-79.38]
+];
+const APT = Object.fromEntries(AIRPORTS.map(([code,city,country,lat,lon])=>[code,{code,city,country,lat,lon}]));
+
+/* ---------- Connecting hubs ----------
+   s: [airport comfort, ease of transit, getting into the city, stopover perks]  (0–10)
+   Update these as things change; they're editorial judgements, not live data. */
+const HUBS = {
+SIN:{n:"Singapore Changi",s:[10,9,9,8],mins:"About 30 min by MRT or taxi",mct:60,sleep:"Airside transit hotel and free rest zones",hi:"Jewel's indoor waterfall, gardens, free movie lounges",stop:"Singapore Airlines sells Singapore Stopover Holiday packages",visa:"Airside transit rarely needs a visa; many passports can enter visa-free.",air:"Singapore Airlines, Scoot"},
+DOH:{n:"Doha Hamad",s:[9,9,7,8],mins:"20 to 30 min by Metro",mct:60,sleep:"Airside hotel, quiet rooms, lounges",hi:"Indoor tropical garden, pool and gym, Museum of Islamic Art in town",stop:"Qatar Airways and Discover Qatar offer discounted stopover hotels",visa:"Many passports enter visa-free; airside transit is simple.",air:"Qatar Airways"},
+DXB:{n:"Dubai International",s:[7,7,8,8],mins:"20 to 40 min by Metro or taxi",mct:75,sleep:"Airside hotels in Terminal 3, sleep pods",hi:"Huge duty free; Burj Khalifa and the beaches are within reach",stop:"Emirates offers stopover packages, and hotel cover on some long connections",visa:"Many passports enter visa-free; check before leaving the airport.",air:"Emirates, flydubai"},
+AUH:{n:"Abu Dhabi Zayed",s:[8,8,5,8],mins:"35 to 45 min by taxi or bus",mct:60,sleep:"Airside hotel and lounges in Terminal A",hi:"Calmer, newer terminal than Dubai; Sheikh Zayed Grand Mosque",stop:"Etihad has offered free or discounted stopover hotel nights",visa:"Rules similar to Dubai; many passports enter visa-free.",air:"Etihad"},
+IST:{n:"Istanbul",s:[7,6,6,8],mins:"45 to 75 min by metro or taxi",mct:75,sleep:"Airside hotel and lounges",hi:"Hagia Sophia and the Grand Bazaar if you have 8+ hours",stop:"Turkish Airlines runs a stopover hotel scheme for eligible tickets and has offered free city tours",visa:"Some passports need an e-visa to leave the airport.",air:"Turkish Airlines, Pegasus"},
+HKG:{n:"Hong Kong",s:[9,8,9,5],mins:"24 min by Airport Express",mct:60,sleep:"Hotel attached to the terminal, lounges",hi:"Victoria Harbour, dim sum, the Peak",stop:"Cathay Pacific has stopover deals on some fares",visa:"Many passports enter visa-free.",air:"Cathay Pacific"},
+ICN:{n:"Seoul Incheon",s:[10,9,6,6],mins:"45 to 60 min by AREX train",mct:60,sleep:"Airside capsule hotel, free showers",hi:"Free transit tours, cultural shows, excellent food halls",stop:"The airport runs free transit tours for long layovers",visa:"A K-ETA or visa may be needed to leave the airport, depending on your passport.",air:"Korean Air, Asiana"},
+HND:{n:"Tokyo Haneda",s:[9,8,9,4],mins:"20 to 30 min by monorail or train",mct:60,sleep:"Hotel connected to Terminal 3, lounges",hi:"Central Tokyo is half an hour away",stop:"No formal programme; build a multi-city ticket",visa:"Many passports enter visa-free.",air:"ANA, JAL"},
+NRT:{n:"Tokyo Narita",s:[7,7,4,4],mins:"60 to 90 min by Narita Express or Skyliner",mct:60,sleep:"Capsule hotel, lounges",hi:"Narita town and its temple are close for short outings",stop:"No formal programme; build a multi-city ticket",visa:"Many passports enter visa-free.",air:"ANA, JAL, ZIPAIR"},
+TPE:{n:"Taipei Taoyuan",s:[7,8,6,6],mins:"35 to 50 min by Airport MRT",mct:60,sleep:"Transit hotel, themed gates",hi:"Night markets and Taipei 101",stop:"Free half-day tours have been offered for long layovers",visa:"Many passports enter visa-free.",air:"EVA Air, China Airlines, Starlux"},
+BKK:{n:"Bangkok Suvarnabhumi",s:[6,6,7,5],mins:"About 30 min by Airport Rail Link",mct:75,sleep:"Airside day rooms",hi:"Temples and street food on an 8+ hour layover",stop:"Thai Airways stopover deals on some routes",visa:"Many passports enter visa-free; the rules change often.",air:"Thai Airways"},
+KUL:{n:"Kuala Lumpur",s:[6,7,5,5],mins:"About 30 min by KLIA Ekspres",mct:60,sleep:"Airside transit hotel",hi:"Petronas Towers on a long layover",stop:"Malaysia Airlines stopover offers on some fares",visa:"Many passports enter visa-free.",air:"Malaysia Airlines, AirAsia"},
+DEL:{n:"Delhi",s:[6,6,5,3],mins:"20 to 30 min by Airport Express metro",mct:90,sleep:"Airside hotel in Terminal 3",hi:"Old Delhi and India Gate on an 8+ hour layover",stop:"No formal programme",visa:"Most visitors need an e-visa to leave the airport.",air:"Air India, IndiGo"},
+PVG:{n:"Shanghai Pudong",s:[6,6,5,4],mins:"Maglev plus metro, about 40 min",mct:90,sleep:"Lounges, nearby hotels",hi:"The Bund and old town on a long layover",stop:"No formal programme",visa:"China offers visa-free transit of up to 240 hours for many passports; check eligibility and routing rules.",air:"China Eastern"},
+CAN:{n:"Guangzhou Baiyun",s:[6,6,5,5],mins:"45 to 60 min by metro",mct:90,sleep:"Transit hotel, lounges",hi:"Cantonese food scene",stop:"China Southern has offered free transit hotels on long connections",visa:"Same visa-free transit rules as Shanghai.",air:"China Southern"},
+AMS:{n:"Amsterdam Schiphol",s:[8,8,9,5],mins:"15 min by train",mct:50,sleep:"Airside hotel and sleep cabins",hi:"Rijksmuseum annex in the terminal; canals 15 minutes away",stop:"Add a stopover with a KLM multi-city booking",visa:"Schengen area. Some passports need an airport transit visa; the ETIAS travel permit is due to start in late 2026.",air:"KLM"},
+FRA:{n:"Frankfurt",s:[6,6,8,4],mins:"12 to 15 min by S-Bahn",mct:45,sleep:"Hotels attached, sleep cabins",hi:"Old town and river are quick to reach",stop:"Add a stopover with a Lufthansa multi-city booking",visa:"Schengen area rules apply.",air:"Lufthansa, Condor"},
+MUC:{n:"Munich",s:[8,8,6,4],mins:"About 40 min by S-Bahn",mct:30,sleep:"Hotel on site, nap cabins",hi:"The airport has its own brewery",stop:"Add a stopover with a Lufthansa multi-city booking",visa:"Schengen area rules apply.",air:"Lufthansa"},
+ZRH:{n:"Zurich",s:[9,9,9,4],mins:"10 to 12 min by train",mct:40,sleep:"Hotels by the terminal",hi:"Lake Zurich and the old town are close",stop:"Swiss offers stopover packages",visa:"Schengen area rules apply.",air:"Swiss"},
+HEL:{n:"Helsinki",s:[8,9,7,8],mins:"About 30 min by train",mct:35,sleep:"Airside hotel, sleep pods",hi:"Compact and calm; lounges with saunas",stop:"Finnair Stopover lets you stay up to 5 nights at no extra airfare",visa:"Schengen area rules apply.",air:"Finnair"},
+LHR:{n:"London Heathrow",s:[6,4,7,3],mins:"15 to 35 min by Heathrow Express or Elizabeth line",mct:90,sleep:"Airside hotel in Terminal 3, hotels at Terminal 5",hi:"Central London on an 8+ hour layover",stop:"No formal programme",visa:"A UK visa or ETA may be required, including for some connections. Terminal changes are slow.",air:"British Airways, Virgin Atlantic"},
+CDG:{n:"Paris Charles de Gaulle",s:[5,4,6,3],mins:"35 to 50 min by RER",mct:90,sleep:"Hotels in and near the terminals",hi:"Paris on a long layover",stop:"Add a stopover with an Air France multi-city booking",visa:"Schengen area. Some passports need an airport transit visa.",air:"Air France"},
+MAD:{n:"Madrid Barajas",s:[7,6,7,4],mins:"25 to 40 min by metro or train",mct:60,sleep:"Lounges, nearby hotels",hi:"Tapas and the Prado on a long layover",stop:"Add a stopover with an Iberia multi-city booking",visa:"Schengen area rules apply.",air:"Iberia"},
+LIS:{n:"Lisbon",s:[5,6,9,9],mins:"About 20 min by metro",mct:60,sleep:"Nearby hotels",hi:"A walkable old city minutes from the runway",stop:"TAP Portugal Stopover lets you stay up to 10 nights at no extra airfare",visa:"Schengen area rules apply.",air:"TAP Air Portugal"},
+KEF:{n:"Reykjavik Keflavik",s:[6,8,4,10],mins:"About 45 min by airport bus",mct:40,sleep:"Nearby hotels",hi:"The Blue Lagoon is 20 minutes from the airport",stop:"Icelandair Stopover lets you stay up to 7 nights at no extra airfare",visa:"Schengen area rules apply.",air:"Icelandair, PLAY"},
+DUB:{n:"Dublin",s:[7,7,7,5],mins:"About 30 min by bus",mct:60,sleep:"Hotels near the airport",hi:"US border preclearance: you land in the US as a domestic arrival",stop:"Aer Lingus stopovers via multi-city booking",visa:"Ireland isn't in Schengen; check Irish and US rules separately.",air:"Aer Lingus"},
+JFK:{n:"New York JFK",s:[4,3,5,2],mins:"45 to 75 min by AirTrain and subway",mct:120,sleep:"Hotel on site",hi:"Manhattan if you have 10+ hours",stop:"No formal programme",visa:"The US has no airside transit: you need an ESTA or visa and must clear immigration even to connect.",air:"JetBlue, American, Delta"},
+LAX:{n:"Los Angeles",s:[3,3,4,2],mins:"45 to 90 min by road",mct:120,sleep:"Hotels outside the airport only",hi:"Santa Monica on a very long layover",stop:"No formal programme",visa:"The US has no airside transit: ESTA or visa required, and bags are usually re-checked.",air:"American, Delta, United, Qantas"},
+SFO:{n:"San Francisco",s:[7,5,7,2],mins:"About 30 min by BART",mct:90,sleep:"Hotel linked by AirTrain",hi:"The city and Golden Gate on an 8+ hour layover",stop:"No formal programme",visa:"The US has no airside transit: ESTA or visa required.",air:"United, Alaska"},
+DFW:{n:"Dallas Fort Worth",s:[6,6,3,2],mins:"About 50 min by train",mct:75,sleep:"Hotel in Terminal D",hi:"Big but efficient, with a fast inter-terminal train",stop:"No formal programme",visa:"The US has no airside transit: ESTA or visa required.",air:"American"},
+HNL:{n:"Honolulu",s:[5,5,6,5],mins:"20 to 30 min to Waikiki by road",mct:90,sleep:"Hotels outside the airport",hi:"Waikiki beach on a layover",stop:"Add a stopover with a multi-city booking",visa:"The US has no airside transit: ESTA or visa required.",air:"Hawaiian, Alaska"},
+YVR:{n:"Vancouver",s:[8,7,8,5],mins:"About 25 min by Canada Line",mct:75,sleep:"Hotel in the terminal",hi:"Stanley Park and the waterfront",stop:"Add a stopover with an Air Canada multi-city booking",visa:"An eTA or visa is usually needed, even in transit, for most passports.",air:"Air Canada, WestJet"},
+YYZ:{n:"Toronto Pearson",s:[6,5,6,4],mins:"25 min by UP Express",mct:90,sleep:"Hotel attached",hi:"Downtown Toronto",stop:"Add a stopover with an Air Canada multi-city booking",visa:"An eTA or visa is usually needed, even in transit.",air:"Air Canada"},
+MEX:{n:"Mexico City",s:[4,4,5,3],mins:"30 to 60 min by road",mct:90,sleep:"Hotel connected to the terminal",hi:"Tacos and museums in the city",stop:"Add a stopover with an Aeromexico multi-city booking",visa:"Many passports enter visa-free.",air:"Aeromexico"},
+PTY:{n:"Panama City Tocumen",s:[5,7,5,7],mins:"30 to 45 min by taxi",mct:45,sleep:"Nearby hotels",hi:"The canal and Casco Viejo",stop:"Copa Airlines Panama Stopover at no extra airfare",visa:"Many passports enter visa-free.",air:"Copa"},
+BOG:{n:"Bogotá",s:[5,6,4,4],mins:"30 to 45 min by road",mct:75,sleep:"Lounges, nearby hotels",hi:"Colonial La Candelaria",stop:"Add a stopover with an Avianca multi-city booking",visa:"Many passports enter visa-free.",air:"Avianca"},
+GRU:{n:"São Paulo Guarulhos",s:[4,4,3,3],mins:"60 to 120 min by road",mct:90,sleep:"Airside hotel in Terminal 3",hi:"A long drive to the city; better for quick changes",stop:"Add a stopover with a LATAM multi-city booking",visa:"Some passports need an e-visa; check before booking.",air:"LATAM, Azul"},
+SCL:{n:"Santiago",s:[5,6,5,4],mins:"About 30 min by road",mct:75,sleep:"Hotel at the airport",hi:"Andes views and a lively city centre",stop:"Add a stopover with a LATAM multi-city booking",visa:"Many passports enter visa-free.",air:"LATAM"},
+AKL:{n:"Auckland",s:[6,6,5,4],mins:"About 40 min by bus or taxi",mct:60,sleep:"Hotel next to the international terminal",hi:"The harbour, and ferries to Waiheke Island",stop:"Add a stopover with an Air New Zealand multi-city booking",visa:"An NZeTA is needed for many passports, even in transit.",air:"Air New Zealand"},
+SYD:{n:"Sydney",s:[6,5,8,4],mins:"About 15 min by train",mct:90,sleep:"Nearby hotels",hi:"Harbour Bridge and Opera House",stop:"Add a stopover with a Qantas multi-city booking",visa:"Most visitors need an ETA or visa to leave the airport; transit rules vary.",air:"Qantas"},
+PER:{n:"Perth",s:[6,6,6,4],mins:"About 20 min by train",mct:75,sleep:"Lounges, nearby hotels",hi:"Qantas nonstops to London and Paris leave from here",stop:"Add a stopover with a Qantas multi-city booking",visa:"Most visitors need an ETA or visa to leave the airport.",air:"Qantas"},
+NAN:{n:"Nadi",s:[5,7,6,8],mins:"About 15 min to the resorts",mct:60,sleep:"Nearby resorts",hi:"A beach break halfway across the Pacific",stop:"Fiji Airways Stopover at no extra airfare",visa:"Many passports enter visa-free.",air:"Fiji Airways"},
+ADD:{n:"Addis Ababa Bole",s:[5,6,4,6],mins:"About 20 min by taxi",mct:60,sleep:"Airline transit hotel for some long connections",hi:"Coffee ceremonies and city tours",stop:"Ethiopian Airlines offers transit hotels and stopover deals",visa:"An e-visa or visa on arrival is available for many passports.",air:"Ethiopian"},
+JNB:{n:"Johannesburg",s:[5,5,4,4],mins:"About 15 min by Gautrain",mct:90,sleep:"Hotel at the airport",hi:"A safari add-on as a stopover",stop:"Add a stopover with a multi-city booking",visa:"Many passports enter visa-free.",air:"South African Airways"}
+};
+
+/* ---------- Geometry ---------- */
+const RAD = Math.PI/180, EARTH = 6371;
+function dist(a,b){
+  const dLat=(b.lat-a.lat)*RAD, dLon=(b.lon-a.lon)*RAD;
+  const h=Math.sin(dLat/2)**2+Math.cos(a.lat*RAD)*Math.cos(b.lat*RAD)*Math.sin(dLon/2)**2;
+  return 2*EARTH*Math.asin(Math.min(1,Math.sqrt(h)));
+}
+function flightTime(km){
+  const mins=Math.round((km/830*60+30)/5)*5;
+  return `${Math.floor(mins/60)}h ${String(mins%60).padStart(2,"0")}m`;
+}
+function greatCircle(a,b,n=72){
+  const p1=a.lat*RAD,l1=a.lon*RAD,p2=b.lat*RAD,l2=b.lon*RAD;
+  const d=dist(a,b)/EARTH; if(d<1e-6) return [[a.lon,a.lat]];
+  const pts=[];
+  for(let i=0;i<=n;i++){
+    const f=i/n, A=Math.sin((1-f)*d)/Math.sin(d), B=Math.sin(f*d)/Math.sin(d);
+    const x=A*Math.cos(p1)*Math.cos(l1)+B*Math.cos(p2)*Math.cos(l2);
+    const y=A*Math.cos(p1)*Math.sin(l1)+B*Math.cos(p2)*Math.sin(l2);
+    const z=A*Math.sin(p1)+B*Math.sin(p2);
+    pts.push([Math.atan2(y,x)/RAD, Math.atan2(z,Math.hypot(x,y))/RAD]);
+  }
+  return pts;
+}
+
+/* ---------- Map ---------- */
+const W=1000, LATMAX=78, LATMIN=-56, H=Math.round(W*(LATMAX-LATMIN)/360);
+const px=lon=>(lon+180)/360*W, py=lat=>(LATMAX-Math.max(LATMIN,Math.min(LATMAX,lat)))/(LATMAX-LATMIN)*H;
+function pathFor(points){
+  let d="", prev=null;
+  for(const [lon,lat] of points){
+    const x=px(lon), y=py(lat);
+    d += (prev===null || Math.abs(x-prev)>W/2) ? `M${x.toFixed(1)} ${y.toFixed(1)}` : `L${x.toFixed(1)} ${y.toFixed(1)}`;
+    prev=x;
+  }
+  return d;
+}
+const svg=document.getElementById("map");
+function baseMap(){
+  let g="";
+  for(let lon=-180;lon<=180;lon+=30) g+=`<path class="grat" d="M${px(lon)} 0V${H}"/>`;
+  for(let lat=-45;lat<=75;lat+=15) g+=`<path class="grat" d="M0 ${py(lat).toFixed(1)}H${W}"/>`;
+  for(const a of AIRPORTS) g+=`<circle class="apt" cx="${px(a[4]).toFixed(1)}" cy="${py(a[3]).toFixed(1)}" r="2.4"/>`;
+  return g;
+}
+function label(x,y,text,cls=""){
+  const anchor = x>W-60 ? "end" : x<60 ? "start" : "middle";
+  return `<text class="halo ${cls}" x="${x}" y="${y-9}" text-anchor="${anchor}">${text}</text>`;
+}
+function drawMap(o,d,hubs){
+  let g=baseMap();
+  g+=`<path class="gc" d="${pathFor(greatCircle(o,d))}"/>`;
+  hubs.slice(0,5).forEach((h,i)=>{
+    const p=pathFor([...greatCircle(o,h.apt,40),...greatCircle(h.apt,d,40)]);
+    if(i===0) g+=`<path class="via draw" d="${p}"/>`;
+  });
+  hubs.slice(0,5).forEach((h,i)=>{
+    const x=px(h.apt.lon), y=py(h.apt.lat);
+    g+=`<circle class="hubdot" cx="${x}" cy="${y}" r="${i===0?6:4.5}"/>`+label(x,y,h.apt.code,i===0?"hl":"");
+  });
+  for(const a of [o,d]){ const x=px(a.lon), y=py(a.lat); g+=`<circle class="end" cx="${x}" cy="${y}" r="6"/>`+label(x,y,a.code); }
+  svg.innerHTML=g;
+  svg.querySelectorAll(".draw").forEach(p=>{ const L=p.getTotalLength(); p.style.setProperty("--len",L); });
+}
+
+/* ---------- Dates ---------- */
+const pad=n=>String(n).padStart(2,"0");
+const toISO=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const fromISO=s=>{const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d);};
+const addDays=(s,n)=>{const d=fromISO(s); d.setDate(d.getDate()+n); return toISO(d);};
+const yymmdd=s=>s.slice(2,4)+s.slice(5,7)+s.slice(8,10);
+const yymm=s=>s.slice(2,4)+s.slice(5,7);
+const monthName=s=>fromISO(s).toLocaleDateString("en-GB",{month:"long",year:"numeric"});
+const niceDate=s=>fromISO(s).toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"});
+const daysBetween=(a,b)=>Math.round((fromISO(b)-fromISO(a))/864e5);
+
+/* ---------- Booking-site links ---------- */
+const CABIN_LABEL={economy:"economy",premiumeconomy:"premium economy",business:"business class",first:"first class"};
+const KAYAK_CABIN={economy:"",premiumeconomy:"/premium",business:"/business",first:"/first"};
+function flexSuffix(flex){ if(flex==="0") return ""; const n=flex==="month"?3:Number(flex); return n===1?"-flexible-1day":`-flexible-${n}days`; }
+
+function skyscanner(o,d,dep,ret,q,{month=false}={}){
+  const part=s=>month?yymm(s):yymmdd(s);
+  let u=`https://${CONFIG.skyscannerDomain}/transport/flights/${o.toLowerCase()}/${d.toLowerCase()}/${part(dep)}/`;
+  if(ret) u+=`${part(ret)}/`;
+  u+=`?adults=${q.adults}&cabinclass=${q.cabin}&rtn=${ret?1:0}`;
+  if(q.stops==="0") u+="&preferdirects=true";
+  return u;
+}
+function google(o,d,dep,ret,q,{month=false}={}){
+  let s = month ? `Flights from ${o} to ${d} in ${monthName(dep)}` : `Flights from ${o} to ${d} on ${dep}`;
+  s += ret ? (month ? ` returning in ${monthName(ret)}` : ` returning ${ret}`) : " one way";
+  if(q.cabin!=="economy") s+=` ${CABIN_LABEL[q.cabin]}`;
+  if(q.adults>1) s+=` for ${q.adults} adults`;
+  if(q.stops==="0") s+=" nonstop";
+  return "https://www.google.com/travel/flights?q="+encodeURIComponent(s);
+}
+function kayakLike(domain,path,o,d,dep,ret,q,flex){
+  let u=`https://${domain}/${path}/${o}-${d}/${dep}${flexSuffix(flex)}`;
+  if(ret) u+=`/${ret}${flexSuffix(flex)}`;
+  u+=KAYAK_CABIN[q.cabin]+(q.adults>1?`/${q.adults}adults`:"")+"?sort=price_a";
+  return u;
+}
+function kayakMulti(legs,q){
+  return `https://${CONFIG.kayakDomain}/flights/`+legs.map(([a,b,dt])=>`${a}-${b}/${dt}`).join("/")+KAYAK_CABIN[q.cabin]+(q.adults>1?`/${q.adults}adults`:"")+"?sort=price_a";
+}
+
+/* ---------- Hub ranking ---------- */
+const STYLE={
+  quick:{w:[.35,.55,0,.1],name:"a quick change"},
+  relaxed:{w:[.6,.25,.1,.05],name:"a relaxed airside layover"},
+  explore:{w:[.2,.15,.55,.1],name:"getting into the city"},
+  stopover:{w:[.15,.05,.4,.4],name:"a stopover of a night or more"}
+};
+function rankHubs(o,d,style){
+  const direct=dist(o,d), limit = direct>9000 ? 1.22 : 1.35;
+  const w=STYLE[style].w, out=[];
+  for(const [code,h] of Object.entries(HUBS)){
+    const apt=APT[code]; if(!apt || code===o.code || code===d.code) continue;
+    const l1=dist(o,apt), l2=dist(apt,d);
+    const minLeg=Math.max(400,direct*0.1); if(l1<minLeg || l2<minLeg) continue;
+    const ratio=(l1+l2)/direct; if(ratio>limit) continue;
+    const fit=h.s.reduce((t,v,i)=>t+v*w[i],0);
+    const score=fit - (ratio-1)*14;           // penalise long detours
+    out.push({apt,h,l1,l2,ratio,fit,score});
+  }
+  return out.sort((a,b)=>b.score-a.score).slice(0,8);
+}
+function verdict(x,style){
+  const f=x.fit, what=STYLE[style].name;
+  if(f>=8.3) return `Excellent for ${what}.`;
+  if(f>=7) return `Good for ${what}.`;
+  if(f>=5.5) return `Workable for ${what}.`;
+  return `Not ideal for ${what}; consider another style here.`;
+}
+function layoverAdvice(x,style){
+  const h=x.h;
+  if(style==="quick") return `Allow at least ${h.mct} minutes to connect${h.mct>=90?"; this airport can be slow, so aim for 2 hours on separate tickets":""}.`;
+  if(style==="relaxed") return `Stay airside. ${h.sleep}.`;
+  if(style==="explore") return "On top of the trip into town, allow 2 to 3 hours for immigration on arrival and security on the way back.";
+  return "Book both flights on one multi-city ticket so the second one is protected if the first is late, then add a hotel.";
+}
+
+/* ---------- Rendering ---------- */
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function siteLink(name,desc,url){ return `<a class="site" href="${esc(url)}" target="_blank" rel="noopener"><strong>${name}</strong><span>${desc}</span></a>`; }
+
+function render(q){
+  const o=APT[q.from]||{code:q.from}, d=APT[q.to]||{code:q.to};
+  const ret = q.trip==="return" ? q.ret : null;
+  const month = q.flex==="month";
+  const flexText = month ? `any day in ${monthName(q.dep)}` : q.flex==="0" ? "your exact dates" : `${q.flex} day${q.flex==="1"?"":"s"} either side`;
+  const known = o.lat!==undefined && d.lat!==undefined;
+  const hubs = known ? rankHubs(o,d,q.style) : [];
+
+  // map + summary
+  if(known){
+    drawMap(o,d,hubs);
+    const km=dist(o,d);
+    document.getElementById("summary").innerHTML =
+      `<div><b>${Math.round(km).toLocaleString()} km</b>as the crow flies</div>`+
+      `<div><b>${flightTime(km)}</b>if flown nonstop</div>`+
+      `<div><b>${km>15500?"Unlikely":"Possible"}</b>${km>15500?"to have a nonstop":"nonstop, if an airline flies it"}</div>`;
+  } else {
+    svg.innerHTML=baseMap();
+    document.getElementById("summary").innerHTML=`<span>We don't have map data for ${esc(!APT[q.from]?q.from:q.to)} yet, so layover suggestions are off. Fare searches below still work.</span>`;
+  }
+
+  let html="";
+
+  // 1. fare searches
+  html+=`<div class="block"><h2>Cheapest fares, ${esc(q.from)} to ${esc(q.to)}</h2>
+  <p class="sub">Each link opens a live search with ${flexText} already set. Sort by price, and use the connecting-airport filter to pick a layover city from the list below.</p><div class="sites">`;
+  if(month){
+    html+=siteLink("Skyscanner","Whole-month price calendar",skyscanner(q.from,q.to,q.dep,ret,q,{month:true}));
+    html+=siteLink("Google Flights","Open the date grid for the cheapest days",google(q.from,q.to,q.dep,ret,q,{month:true}));
+  } else {
+    html+=siteLink("Skyscanner","Your dates; tap the calendar for nearby days",skyscanner(q.from,q.to,q.dep,ret,q));
+    html+=siteLink("Google Flights","Your dates; open the date grid to compare",google(q.from,q.to,q.dep,ret,q));
+  }
+  html+=siteLink("Kayak",q.flex==="0"?"Your exact dates":"Flexible dates built in",kayakLike(CONFIG.kayakDomain,"flights",q.from,q.to,q.dep,ret,q,q.flex));
+  html+=siteLink("Momondo","Often finds smaller agencies",kayakLike(CONFIG.momondoDomain,"flight-search",q.from,q.to,q.dep,ret,q,q.flex));
+  html+=`</div></div>`;
+
+  // 2. date ideas
+  if(q.flex!=="0"){
+    const len = ret ? daysBetween(q.dep,ret) : 0;
+    let start, end;
+    if(month){ const s=fromISO(q.dep); start=toISO(new Date(s.getFullYear(),s.getMonth(),1)); end=toISO(new Date(s.getFullYear(),s.getMonth()+1,0)); }
+    else { start=addDays(q.dep,-Number(q.flex)); end=addDays(q.dep,Number(q.flex)); }
+    const today=toISO(new Date()); if(start<today) start=addDays(today,1);
+    const rows=[];
+    for(let s=start; s<=end; s=addDays(s,1)){
+      const dow=fromISO(s).getDay();
+      rows.push({s,r:ret?addDays(s,len):null,midweek:dow===2||dow===3});
+    }
+    const shown = month ? rows.filter(r=>r.midweek).concat(rows.filter(r=>!r.midweek)).slice(0,12).sort((a,b)=>a.s<b.s?-1:1) : rows;
+    html+=`<div class="block"><h2>Dates to try</h2><p class="sub">Tuesday and Wednesday departures are often cheaper on long-haul routes, though not always.${ret?` Each row keeps your ${len}-night trip length.`:""}</p>
+    <div class="tablewrap"><table><thead><tr><th>Leave</th>${ret?"<th>Come back</th>":""}<th>Search</th></tr></thead><tbody>`;
+    for(const r of shown){
+      html+=`<tr><td>${niceDate(r.s)}${r.midweek?'<span class="tag">Midweek</span>':""}</td>${ret?`<td>${niceDate(r.r)}</td>`:""}
+      <td><a href="${esc(skyscanner(q.from,q.to,r.s,r.r,q))}" target="_blank" rel="noopener">Skyscanner</a><a href="${esc(google(q.from,q.to,r.s,r.r,q))}" target="_blank" rel="noopener">Google Flights</a></td></tr>`;
+    }
+    html+=`</tbody></table></div></div>`;
+  }
+
+  // 3. layovers
+  if(known && q.stops!=="0"){
+    html+=`<div class="block"><h2>Where to change planes</h2><p class="sub">Airports on or near the shortest path, ranked for ${STYLE[q.style].name}. Open any one for details and a ready-made multi-city search.</p>`;
+    if(!hubs.length){
+      html+=`<div class="empty">No major hubs sit close to this route. That usually means a nonstop is the natural option; try the searches above.</div>`;
+    } else {
+      html+=`<ol class="hubs">`;
+      hubs.forEach((x,i)=>{
+        const h=x.h, c=x.apt.code;
+        const gap = q.style==="stopover" ? Number(q.nights) : q.style==="explore" ? 1 : 0;
+        const leg2 = addDays(q.dep,gap);
+        const legs=[[q.from,c,q.dep],[c,q.to,leg2]]; if(ret) legs.push([q.to,q.from,ret]);
+        const bars=["Airport comfort","Easy transfers","City access","Stopover perks"].map((n,k)=>`<div><span>${n}</span><i style="--v:${h.s[k]*10}%"></i><span>${h.s[k]}</span></div>`).join("");
+        html+=`<li><details${i===0?" open":""}><summary>
+          <span class="rank">${i+1}</span><span class="hcode">${c}</span>
+          <span class="hname">${esc(h.n)}<small>${flightTime(x.l1)} then ${flightTime(x.l2)}, ${x.ratio<1.02?"almost no":"+"+Math.round((x.ratio-1)*100)+"%"} extra distance</small></span>
+          <span class="fit"><b>${x.fit.toFixed(1)}</b>fit score</span></summary>
+          <div class="hubbody">
+            <div><p class="verdict">${verdict(x,q.style)}</p><div class="bars">${bars}</div></div>
+            <div>
+              <dl class="facts">
+                <dt>For your layover</dt><dd>${esc(layoverAdvice(x,q.style))}</dd>
+                <dt>Worth doing</dt><dd>${esc(h.hi)}.</dd>
+                <dt>Into the city</dt><dd>${esc(h.mins)}.</dd>
+                <dt>Stopover deals</dt><dd>${esc(h.stop)}.</dd>
+                <dt>Main airlines</dt><dd>${esc(h.air)}</dd>
+                <dt>Visas and transit</dt><dd class="visa">${esc(h.visa)}</dd>
+              </dl>
+              <div class="hublinks">
+                <a href="${esc(kayakMulti(legs,q))}" target="_blank" rel="noopener">Multi-city via ${c} on Kayak</a>
+                <a href="${esc(skyscanner(q.from,c,q.dep,null,q))}" target="_blank" rel="noopener">${q.from} to ${c} only</a>
+                <a href="${esc(skyscanner(c,q.to,leg2,null,q))}" target="_blank" rel="noopener">${c} to ${q.to} only</a>
+              </div>
+              <p class="warn">Buying the two legs as separate tickets can be cheaper, but if the first flight is late the second airline owes you nothing. Leave a long gap and pack light.</p>
+            </div>
+          </div></details></li>`;
+      });
+      html+=`</ol>`;
+    }
+    html+=`</div>`;
+  }
+
+  // 4. share
+  html+=`<div class="block"><h2>Send this plan to someone</h2><p class="sub">The link reopens this exact search, dates and layover choice included.</p>
+  <div class="share"><button class="btn btn-ghost" id="copy" type="button">Copy link to this plan</button><span id="copied" class="hint"></span></div></div>`;
+
+  const res=document.getElementById("results");
+  res.innerHTML=html; res.classList.remove("hidden");
+  document.getElementById("copy").onclick=async()=>{
+    const msg=document.getElementById("copied");
+    try{ await navigator.clipboard.writeText(location.href); msg.textContent="Link copied."; }
+    catch{ msg.textContent="Copy this address from your browser bar: "+location.href; }
+  };
+}
+
+/* ---------- Form ---------- */
+const f=document.getElementById("f");
+document.getElementById("apts").innerHTML=AIRPORTS.map(a=>`<option value="${a[0]}">${a[1]}, ${a[2]}</option>`).join("");
+
+function hint(id){
+  const v=f[id].value.trim().toUpperCase(), a=APT[v];
+  document.getElementById(id+"Hint").textContent = a ? `${a.city}, ${a.country}` : v.length===3 ? "Not in our list, but searches still work" : "";
+}
+["from","to"].forEach(id=>f[id].addEventListener("input",()=>{ f[id].value=f[id].value.toUpperCase().replace(/[^A-Z]/g,""); hint(id); }));
+document.getElementById("swap").onclick=()=>{ [f.from.value,f.to.value]=[f.to.value,f.from.value]; hint("from"); hint("to"); };
+
+function syncVisibility(){
+  const isReturn=f.trip.value==="return";
+  document.getElementById("retWrap").style.visibility=isReturn?"visible":"hidden";
+  document.getElementById("nightsWrap").classList.toggle("hidden",f.layover.value!=="stopover");
+}
+f.addEventListener("change",syncVisibility);
+
+function readForm(){
+  return {from:f.from.value.trim().toUpperCase(),to:f.to.value.trim().toUpperCase(),trip:f.trip.value,dep:f.dep.value,ret:f.ret.value,
+    flex:f.flex.value,adults:Math.min(9,Math.max(1,parseInt(f.adults.value)||1)),cabin:f.cabin.value,stops:f.stops.value,style:f.layover.value,
+    nights:Math.min(10,Math.max(1,parseInt(f.nights.value)||2))};
+}
+function writeForm(q){
+  for(const k of ["from","to","dep","ret","flex","adults","cabin","stops","nights"]) if(q[k]!=null && f[k]) f[k].value=q[k];
+  for(const k of ["trip","style"]) if(q[k]){ const el=f.querySelector(`input[name="${k==="style"?"layover":k}"][value="${q[k]}"]`); if(el) el.checked=true; }
+  hint("from"); hint("to"); syncVisibility();
+}
+function validate(q){
+  if(!/^[A-Z]{3}$/.test(q.from)||!/^[A-Z]{3}$/.test(q.to)) return "Enter a three-letter airport code for both From and To, like LHR or SYD.";
+  if(q.from===q.to) return "From and To are the same airport. Change one of them.";
+  if(!q.dep) return "Pick a date to leave.";
+  if(q.trip==="return"){ if(!q.ret) return "Pick a date to come back, or switch to one way."; if(q.ret<=q.dep) return "Your return date needs to be after the day you leave."; }
+  return "";
+}
+f.addEventListener("submit",e=>{
+  e.preventDefault();
+  const q=readForm(), msg=validate(q);
+  document.getElementById("err").textContent=msg;
+  if(msg) return;
+  history.replaceState(null,"","#"+new URLSearchParams(q).toString());
+  render(q);
+  document.getElementById("results").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});
+});
+
+// defaults, shared links, request link
+(function init(){
+  const t=new Date(); const dep=new Date(t.getFullYear(),t.getMonth(),t.getDate()+60); const ret=new Date(dep); ret.setDate(ret.getDate()+21);
+  f.dep.value=toISO(dep); f.ret.value=toISO(ret); f.dep.min=toISO(t); f.ret.min=toISO(t);
+  svg.setAttribute("viewBox",`0 0 ${W} ${H}`); svg.innerHTML=baseMap();
+  const rl=document.getElementById("requestLink");
+  if(CONFIG.repo) rl.href=`https://github.com/${CONFIG.repo}/issues/new?template=flight-request.yml`; else rl.remove();
+  if(location.hash.length>1){
+    const q=Object.fromEntries(new URLSearchParams(location.hash.slice(1)));
+    writeForm(q); const r=readForm(); if(!validate(r)) render(r);
+  }
+  syncVisibility();
+})();
+</script>
+</body>
+</html>
