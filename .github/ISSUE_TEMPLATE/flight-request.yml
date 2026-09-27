@@ -1,1 +1,67 @@
-
+name: Flight planning request
+description: Tell us about a long-haul trip and we'll reply with booking links and layover ideas.
+title: "Trip: [FROM] to [TO]"
+labels: ["flight-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This request is public, so please don't include passport numbers, phone numbers or other personal details.
+  - type: input
+    id: from
+    attributes:
+      label: Flying from
+      placeholder: "City or airport code, e.g. Wellington (WLG)"
+    validations:
+      required: true
+  - type: input
+    id: to
+    attributes:
+      label: Flying to
+      placeholder: "City or airport code, e.g. London (LHR)"
+    validations:
+      required: true
+  - type: input
+    id: dates
+    attributes:
+      label: When do you want to travel?
+      placeholder: "e.g. leave 10 Nov, back around 1 Dec"
+    validations:
+      required: true
+  - type: dropdown
+    id: flex
+    attributes:
+      label: How flexible are your dates?
+      options:
+        - Exact dates only
+        - A day or two either side
+        - Up to a week either side
+        - Any time in the month
+    validations:
+      required: true
+  - type: dropdown
+    id: layover
+    attributes:
+      label: What kind of layover do you want?
+      options:
+        - Quick change (under 3 hours)
+        - Relaxed, stay in the airport (3 to 8 hours)
+        - Long enough to see the city (8 to 24 hours)
+        - A stopover of one or more nights
+        - No preference, just the cheapest
+  - type: input
+    id: travellers
+    attributes:
+      label: Travellers and cabin
+      placeholder: "e.g. 2 adults, economy"
+  - type: input
+    id: passport
+    attributes:
+      label: Passport nationality (helps us check transit visas)
+      placeholder: "e.g. New Zealand"
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else?
+      placeholder: "Budget, airlines you like or avoid, cities you'd love to stop in..."
+ 
